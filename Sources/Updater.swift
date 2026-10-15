@@ -1,9 +1,9 @@
 import AppKit
 
-/// Sjekker GitHub Releases for nye versjoner og kan installere dem i stedet for den gamle appen.
+/// Checks GitHub Releases for new versions and can install them in place of the current app.
 enum Updater {
-    static let repo = "olaimalm/TurboTast"
-    static let assetName = "TurboTast.zip"
+    static let repo = "olaimalm/TurboKey"
+    static let assetName = "TurboKey.zip"
 
     static var currentVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
@@ -21,7 +21,7 @@ enum Updater {
         var version: String { tag_name.hasPrefix("v") ? String(tag_name.dropFirst()) : tag_name }
     }
 
-    /// `silent`: vis bare noe hvis det finnes en ny versjon (brukes ved oppstart).
+    /// `silent`: only show something if there is a new version (used at launch).
     static func check(silent: Bool) {
         var request = URLRequest(url: URL(string: "https://api.github.com/repos/\(repo)/releases/latest")!)
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
@@ -33,19 +33,19 @@ enum Updater {
 
     private static func present(_ release: Release?, silent: Bool) {
         guard let release else {
-            if !silent { alert("Kunne ikke sjekke etter oppdateringer", "Sjekk at du er koblet til internett.") }
+            if !silent { alert("Couldn’t check for updates", "Make sure you’re connected to the internet.") }
             return
         }
         guard release.version.compare(currentVersion, options: .numeric) == .orderedDescending else {
-            if !silent { alert("Du har siste versjon", "TurboTast \(currentVersion) er den nyeste.") }
+            if !silent { alert("You’re up to date", "TurboKey \(currentVersion) is the latest version.") }
             return
         }
 
         let asset = release.assets.first { $0.name == assetName }
         let answer = alert(
-            "TurboTast \(release.version) er klar",
-            "Du har \(currentVersion). Etter oppdateringen må du kanskje gi TurboTast tilgang under Tilgjengelighet på nytt.",
-            buttons: asset == nil ? ["Åpne nedlastingssiden", "Senere"] : ["Installer og start på nytt", "Se hva som er nytt", "Senere"]
+            "TurboKey \(release.version) is available",
+            "You have \(currentVersion). After updating, you may need to grant TurboKey Accessibility access again.",
+            buttons: asset == nil ? ["Open Download Page", "Later"] : ["Install and Relaunch", "What’s New", "Later"]
         )
         switch (answer, asset) {
         case (.alertFirstButtonReturn, let asset?): install(from: asset.browser_download_url, fallback: release.html_url)
@@ -61,8 +61,8 @@ enum Updater {
                     guard let file else { throw error ?? URLError(.badServerResponse) }
                     try replaceApp(withZip: file)
                 } catch {
-                    let answer = alert("Oppdateringen feilet", error.localizedDescription,
-                                       buttons: ["Last ned manuelt", "Avbryt"])
+                    let answer = alert("Update failed", error.localizedDescription,
+                                       buttons: ["Download Manually", "Cancel"])
                     if answer == .alertFirstButtonReturn { NSWorkspace.shared.open(fallback) }
                 }
             }
@@ -71,7 +71,7 @@ enum Updater {
 
     private static func replaceApp(withZip zip: URL) throws {
         let fm = FileManager.default
-        let work = fm.temporaryDirectory.appendingPathComponent("TurboTast-update-\(UUID().uuidString)")
+        let work = fm.temporaryDirectory.appendingPathComponent("TurboKey-update-\(UUID().uuidString)")
         try fm.createDirectory(at: work, withIntermediateDirectories: true)
 
         let unzip = Process()
@@ -80,7 +80,7 @@ enum Updater {
         try unzip.run()
         unzip.waitUntilExit()
 
-        let newApp = work.appendingPathComponent("TurboTast.app")
+        let newApp = work.appendingPathComponent("TurboKey.app")
         guard unzip.terminationStatus == 0, fm.fileExists(atPath: newApp.path) else {
             throw CocoaError(.fileReadCorruptFile)
         }

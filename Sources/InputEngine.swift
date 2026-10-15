@@ -1,12 +1,12 @@
 import ApplicationServices
 import Cocoa
 
-/// Fanger opp tastatur- og musehendelser globalt (CGEventTap) og sender ekstra trykk.
-/// All tilstand her endres kun på hovedtråden; selve sendingen skjer på egne køer.
+/// Captures keyboard and mouse events globally (CGEventTap) and sends extra presses.
+/// All state here is only changed on the main thread; sending happens on separate queues.
 final class InputEngine {
-    /// Merker hendelser vi selv har sendt, så vi ikke ganger opp våre egne trykk.
+    /// Tags events we sent ourselves, so we never multiply our own presses.
     static let marker: Int64 = 0x5455_5242
-    /// ⌃⌥⌘M slår TurboTast av og på.
+    /// ⌃⌥⌘M turns TurboKey on and off.
     static let toggleKeyCode: UInt16 = 46
 
     var onToggleHotkey: (() -> Void)?
@@ -17,8 +17,8 @@ final class InputEngine {
     private var active = false
     private var holdTimers: [Trigger: DispatchSourceTimer] = [:]
 
-    private let burstQueue = DispatchQueue(label: "TurboTast.burst")
-    private let holdQueue = DispatchQueue(label: "TurboTast.hold")
+    private let burstQueue = DispatchQueue(label: "TurboKey.burst")
+    private let holdQueue = DispatchQueue(label: "TurboKey.hold")
     private let source: CGEventSource? = {
         let source = CGEventSource(stateID: .privateState)
         source?.localEventsSuppressionInterval = 0
@@ -30,7 +30,7 @@ final class InputEngine {
 
     var isRunning: Bool { tap != nil }
 
-    // MARK: - Oppsett
+    // MARK: - Setup
 
     func configure(mappings list: [Mapping], active: Bool) {
         var dict: [Trigger: Mapping] = [:]
@@ -76,7 +76,7 @@ final class InputEngine {
         runLoopSource = nil
     }
 
-    // MARK: - Hendelser
+    // MARK: - Events
 
     fileprivate func handle(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         let pass = Unmanaged.passUnretained(event)
@@ -88,7 +88,7 @@ final class InputEngine {
         if event.getIntegerValueField(.eventSourceUserData) == Self.marker { return pass }
 
         let flags = event.flags
-        // Snarveier som ⌘W eller ⌃C skal aldri ganges opp.
+        // Shortcuts like ⌘W or ⌃C are never multiplied.
         let blocked = !flags.intersection([.maskCommand, .maskControl, .maskAlternate]).isEmpty
 
         switch type {
@@ -102,7 +102,7 @@ final class InputEngine {
             }
 
             let trigger = Trigger(kind: .key, keyCode: code)
-            if holdTimers[trigger] != nil { return nil } // svelg OS-ets egne gjentakelser
+            if holdTimers[trigger] != nil { return nil } // swallow the OS key repeat
             guard active, !blocked, let mapping = mappings[trigger] else { return pass }
 
             switch mapping.mode {
@@ -137,7 +137,7 @@ final class InputEngine {
         }
     }
 
-    // MARK: - Ganger opp
+    // MARK: - Multiply
 
     private func burst(_ trigger: Trigger, count: Int, delayMs: Int, flags: CGEventFlags) {
         guard count > 0 else { return }
@@ -161,14 +161,14 @@ final class InputEngine {
         lock.lock(); generation += 1; lock.unlock()
     }
 
-    // MARK: - Hold for spam
+    // MARK: - Hold to spam
 
     private func startHold(_ trigger: Trigger, intervalMs: Int, flags: CGEventFlags) {
         let interval = DispatchTimeInterval.milliseconds(max(intervalMs, 5))
         let timer = DispatchSource.makeTimerSource(queue: holdQueue)
         timer.schedule(deadline: .now() + interval, repeating: interval)
         timer.setEventHandler { [weak self] in
-            // Slipp og trykk igjen – så er tasten fortsatt nede når du slipper selv.
+            // Release and press again, so the key is still down when you let go yourself.
             self?.post(trigger, down: false, flags: flags)
             self?.post(trigger, down: true, flags: flags)
         }
@@ -176,8 +176,8 @@ final class InputEngine {
         timer.resume()
     }
 
-    /// Stopper en aktiv hold. Med `release` sendes slipp-hendelsen etter siste tikk,
-    /// så tasten/knappen aldri blir hengende nede.
+    /// Stops an active hold. With `release`, the release event is sent after the last tick,
+    /// so the key/button never gets stuck down.
     @discardableResult
     private func stopHold(_ trigger: Trigger, release: Bool) -> Bool {
         guard let timer = holdTimers.removeValue(forKey: trigger) else { return false }

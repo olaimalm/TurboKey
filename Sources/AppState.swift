@@ -11,7 +11,7 @@ final class AppState: ObservableObject {
         }
     }
     @Published private(set) var hasAccess = false
-    /// Mens du velger en ny tast i innstillingene er motoren pauset.
+    /// The engine is paused while you pick a new key in settings.
     @Published var isRecording = false {
         didSet { apply() }
     }
@@ -19,9 +19,13 @@ final class AppState: ObservableObject {
     let engine = InputEngine()
     private var accessTimer: Timer?
     private static let storageKey = "config.v1"
+    /// Settings from before the app was renamed from TurboTast.
+    private static let legacyDomain = "com.olai.TurboTast"
 
     init() {
-        if let data = UserDefaults.standard.data(forKey: Self.storageKey),
+        let data = UserDefaults.standard.data(forKey: Self.storageKey)
+            ?? UserDefaults(suiteName: Self.legacyDomain)?.data(forKey: Self.storageKey)
+        if let data,
            let saved = try? JSONDecoder().decode(AppConfig.self, from: data),
            !saved.profiles.isEmpty {
             config = saved
@@ -41,7 +45,7 @@ final class AppState: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) { Updater.check(silent: true) }
     }
 
-    // MARK: - Profiler
+    // MARK: - Profiles
 
     var activeProfileIndex: Int {
         config.profiles.firstIndex { $0.id == config.activeProfileID } ?? 0
@@ -50,7 +54,7 @@ final class AppState: ObservableObject {
     var activeProfile: Profile { config.profiles[activeProfileIndex] }
 
     func addProfile() {
-        let profile = Profile(name: "Profil \(config.profiles.count + 1)", mappings: [Mapping()])
+        let profile = Profile(name: "Profile \(config.profiles.count + 1)", mappings: [Mapping()])
         config.profiles.append(profile)
         config.activeProfileID = profile.id
     }
@@ -71,7 +75,7 @@ final class AppState: ObservableObject {
         config.profiles[activeProfileIndex].mappings.removeAll { $0.id == id }
     }
 
-    // MARK: - Av/på og tilgang
+    // MARK: - On/off and access
 
     func toggleFromHotkey() {
         config.enabled.toggle()

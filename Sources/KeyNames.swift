@@ -3,12 +3,12 @@ import Foundation
 
 enum KeyNames {
     private static let special: [UInt16: String] = [
-        36: "Return", 48: "Tab", 49: "Mellomrom", 51: "Slett", 53: "Esc", 117: "Fwd Slett",
+        36: "Return", 48: "Tab", 49: "Space", 51: "Delete", 53: "Esc", 117: "Fwd Delete",
         123: "←", 124: "→", 125: "↓", 126: "↑",
         115: "Home", 119: "End", 116: "Page Up", 121: "Page Down",
         122: "F1", 120: "F2", 99: "F3", 118: "F4", 96: "F5", 97: "F6",
         98: "F7", 100: "F8", 101: "F9", 109: "F10", 103: "F11", 111: "F12",
-        76: "Enter (num)",
+        76: "Keypad Enter",
     ]
 
     static func name(for keyCode: UInt16) -> String {
@@ -16,10 +16,10 @@ enum KeyNames {
         if let char = translate(keyCode), !char.trimmingCharacters(in: .whitespaces).isEmpty {
             return char.uppercased()
         }
-        return "Tast \(keyCode)"
+        return "Key \(keyCode)"
     }
 
-    /// Slår opp hvilket tegn tasten gir med gjeldende tastaturoppsett (f.eks. norsk Æ/Ø/Å).
+    /// Looks up the character the key produces with the current keyboard layout (e.g. Æ/Ø/Å on Norwegian).
     private static func translate(_ keyCode: UInt16) -> String? {
         guard let source = TISCopyCurrentKeyboardLayoutInputSource()?.takeRetainedValue(),
               let ptr = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData)
@@ -44,8 +44,8 @@ enum KeyNames {
 extension Trigger {
     var displayName: String {
         switch kind {
-        case .mouseLeft: return "Venstreklikk"
-        case .mouseRight: return "Høyreklikk"
+        case .mouseLeft: return "Left click"
+        case .mouseRight: return "Right click"
         case .key: return KeyNames.name(for: keyCode)
         }
     }

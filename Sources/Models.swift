@@ -4,24 +4,24 @@ enum TriggerKind: String, Codable {
     case key, mouseLeft, mouseRight
 }
 
-/// Hva som utløser en gjentakelse: en tast (keyCode) eller en museknapp.
+/// What triggers a repeat: a key (keyCode) or a mouse button.
 struct Trigger: Codable, Hashable {
     var kind: TriggerKind
     var keyCode: UInt16 = 0
 }
 
 enum RepeatMode: String, Codable, CaseIterable, Identifiable {
-    /// Ett trykk blir til `count` trykk.
+    /// One press becomes `count` presses.
     case multiply
-    /// Trykker om og om igjen så lenge tasten holdes inne.
+    /// Presses again and again for as long as the key is held down.
     case hold
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .multiply: return "Ganger opp"
-        case .hold: return "Hold for spam"
+        case .multiply: return "Multiply"
+        case .hold: return "Hold to spam"
         }
     }
 }
@@ -31,9 +31,9 @@ struct Mapping: Codable, Identifiable, Equatable {
     var enabled = true
     var trigger: Trigger?
     var mode: RepeatMode = .multiply
-    /// Totalt antall trykk per ekte trykk (inkludert ditt eget).
+    /// Total presses per real press (including your own).
     var count = 10
-    /// Pause mellom hvert trykk (eller intervall i hold-modus).
+    /// Pause between presses (or the interval in hold mode).
     var delayMs = 10
 }
 
@@ -50,7 +50,7 @@ struct AppConfig: Codable, Equatable {
 
     static func makeDefault() -> AppConfig {
         let profile = Profile(
-            name: "Standard",
+            name: "Default",
             mappings: [Mapping(trigger: Trigger(kind: .key, keyCode: 13))] // W
         )
         return AppConfig(profiles: [profile], activeProfileID: profile.id, enabled: false)

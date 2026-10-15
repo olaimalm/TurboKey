@@ -1,78 +1,79 @@
-# TurboTast ⚡
+# TurboKey ⚡
 
-En liten Mac-app i menylinjen som ganger opp tastetrykk og museklikk – litt som AutoHotkey.
-Trykk **W** én gang, og TurboTast trykker den 10 ganger for deg.
+**A free, open-source key multiplier and auto clicker for macOS** – a lightweight AutoHotkey alternative that lives in your menu bar.
 
-## Funksjoner
+Press **W** once and TurboKey presses it 10 times for you. Or hold a key (or mouse button) and it fires again and again – a turbo button for any app.
 
-- **Ganger opp** – ett trykk blir til 2–1000 trykk.
-- **Hold for spam** – trykker om og om igjen så lenge du holder inne.
-- **Taster og museklikk** – venstre- og høyreklikk kan også ganges opp.
-- **Justerbar hastighet** – 1–500 ms pause mellom hvert trykk.
-- **Profiler** – lagre ulike oppsett og bytt raskt fra menylinjen.
-- **⌃⌥⌘M** slår TurboTast av/på hvor som helst.
-- Kombinasjoner med ⌘, ⌃ eller ⌥ blir aldri ganget opp (så ⌘W lukker ikke ti vinduer).
-- Innebygd **«Se etter oppdateringer…»** som installerer nye versjoner med ett klikk.
+## Features
 
-Krever macOS 15 eller nyere. Virker på både Apple Silicon og Intel.
+- **Multiply** – one press becomes 2–1000 presses.
+- **Hold to spam** – repeats for as long as you hold the key or button down.
+- **Keys and mouse clicks** – left and right mouse clicks work too (auto clicker).
+- **Adjustable speed** – 1–500 ms delay between presses.
+- **Profiles** – save different setups and switch between them from the menu bar.
+- **⌃⌥⌘M** toggles TurboKey on/off from anywhere.
+- **Safe by default** – combinations with ⌘, ⌃ or ⌥ are never multiplied (so ⌘W won't close ten windows).
+- **Built-in updates** – *Check for Updates…* installs new versions with one click.
 
-## Installering
+Requires macOS 15 or later. Runs natively on both Apple Silicon and Intel Macs.
 
-1. Last ned **TurboTast.zip** fra [siste release](https://github.com/olaimalm/TurboTast/releases/latest).
-2. Pakk ut og dra **TurboTast.app** inn i **Programmer**.
-3. Åpne appen. Første gang sier macOS at den ikke kan bekrefte utvikleren (appen er ikke notarisert av Apple).
-   Gå til **Systeminnstillinger → Personvern og sikkerhet**, bla ned og klikk **Åpne likevel**.
-   Alternativt i Terminal:
+## Installation
+
+1. Download **TurboKey.zip** from the [latest release](https://github.com/olaimalm/TurboKey/releases/latest).
+2. Unzip it and drag **TurboKey.app** into your **Applications** folder.
+3. Open the app. The first time, macOS will say it can't verify the developer (the app is not notarized by Apple).
+   Go to **System Settings → Privacy & Security**, scroll down and click **Open Anyway**.
+   Or run this in Terminal:
    ```bash
-   xattr -dr com.apple.quarantine /Applications/TurboTast.app
+   xattr -dr com.apple.quarantine /Applications/TurboKey.app
    ```
-4. Gi tilgang under **Systeminnstillinger → Personvern og sikkerhet → Tilgjengelighet** og slå på TurboTast.
-   Uten dette kan ikke appen se eller sende tastetrykk.
-5. Klikk ⚡-ikonet i menylinjen → **Aktiv**.
+4. Grant access in **System Settings → Privacy & Security → Accessibility** and turn on TurboKey.
+   Without this, the app can't see or send key presses.
+5. Click the ⚡ icon in the menu bar → **Active**.
 
-> Etter en oppdatering kan macOS «glemme» tilgangen selv om bryteren står på.
-> Fjern TurboTast fra listen med **–** og legg den til igjen.
+> After an update, macOS may "forget" the access even though the switch is still on.
+> Remove TurboKey from the list with **–** and add it again.
 
-## Bruk
+## Usage
 
-Klikk ⚡ → **Innstillinger…**. For hver rad velger du:
+Click ⚡ → **Settings…**. For each row you choose:
 
-| Felt | Betydning |
+| Field | Meaning |
 | --- | --- |
-| Tast / klikk | Klikk og trykk en tast, eller velg venstre-/høyreklikk |
-| Modus | *Ganger opp* eller *Hold for spam* |
-| Antall | Totalt antall trykk per ekte trykk (inkludert ditt eget) |
-| Pause | Tid mellom hvert ekstra trykk |
+| Key / click | Click and press a key, or choose left/right mouse click |
+| Mode | *Multiply* or *Hold to spam* |
+| Count | Total presses per real press (including your own) |
+| Delay | Time between each extra press |
 
-⚠️ Mange nettspill har anti-juks som kan oppdage makroer. Bruk på eget ansvar.
+⚠️ Many online games have anti-cheat systems that can detect macros. Use at your own risk.
 
-## Utvikling
+## Development
 
-Krever Xcode (eller Command Line Tools med Swift 6).
-
-```bash
-./build.sh            # bygg for denne Macen → build/TurboTast.app
-./build.sh --install  # bygg, installer i /Applications og start
-./build.sh --release  # universal-bygg + build/TurboTast.zip
-```
-
-Koden ligger i `Sources/`:
-
-- `InputEngine.swift` – fanger opp og sender tastetrykk/klikk (CGEventTap)
-- `AppState.swift` – innstillinger, profiler og tilgang
-- `Views.swift` – menylinjen og innstillingsvinduet (SwiftUI)
-- `Updater.swift` – sjekker og installerer nye versjoner fra GitHub Releases
-
-### Lage en ny versjon
+Requires Xcode (or the Command Line Tools with Swift 6).
 
 ```bash
-git tag v1.1.0
-git push origin v1.1.0
+./build.sh            # build for this Mac → build/TurboKey.app
+./build.sh --install  # build, install to /Applications and launch
+./build.sh --release  # universal build + build/TurboKey.zip
 ```
 
-GitHub Actions bygger appen og publiserer en ny release med `TurboTast.zip`.
-Alle som har appen får beskjed neste gang de starter den (eller via «Se etter oppdateringer…»).
+The code lives in `Sources/`:
 
-## Lisens
+- `InputEngine.swift` – captures and sends key presses/clicks (CGEventTap)
+- `AppState.swift` – settings, profiles and permissions
+- `Views.swift` – menu bar and settings window (SwiftUI)
+- `Updater.swift` – checks for and installs new versions from GitHub Releases
 
-MIT – se [LICENSE](LICENSE).
+### Releasing a new version
+
+```bash
+git tag v1.2.0
+git push origin v1.2.0
+```
+
+GitHub Actions builds the app and publishes a new release with `TurboKey.zip`.
+Everyone who has the app is notified the next time they launch it (or via *Check for Updates…*).
+
+## License
+
+MIT – see [LICENSE](LICENSE).
