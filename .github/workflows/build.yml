@@ -1,0 +1,14 @@
+# Sjekker at appen bygger på hver push og pull request.
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./build.sh --release
