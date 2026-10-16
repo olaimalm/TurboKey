@@ -2,7 +2,7 @@
 # Builds TurboKey.app.
 #
 #   ./build.sh               build for this Mac
-#   ./build.sh --install     build, copy to /Applications and launch
+#   ./build.sh --install     build, copy to /Applications and launch (no copy left in build/)
 #   ./build.sh --release     build for both Apple Silicon and Intel, and create build/TurboKey.zip
 #
 # Set the version with VERSION=1.2.0 ./build.sh (otherwise the one in Info.plist is used).
@@ -41,10 +41,15 @@ xattr -cr "$APP"
 IDENTITY=$(security find-identity -v -p codesigning | awk -F'"' '/Apple Development|Developer ID/ { print $2; exit }')
 codesign --force --sign "${IDENTITY:--}" --identifier com.olai.TurboKey "$APP"
 codesign --verify --strict "$APP"
-ditto "$APP" build/TurboKey.app
-echo "Built build/TurboKey.app (signed with: ${IDENTITY:-ad hoc})"
+echo "Built TurboKey.app (signed with: ${IDENTITY:-ad hoc})"
 
+# Only leave a copy in build/ for a plain build, so there aren't two TurboKey apps
+# on the Mac after --install.
 case "$MODE" in
+    "")
+        ditto "$APP" build/TurboKey.app
+        echo "Saved build/TurboKey.app"
+        ;;
     --install)
         pkill -x TurboKey || true
         rm -rf /Applications/TurboKey.app
